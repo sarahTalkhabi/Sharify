@@ -22,3 +22,21 @@ def password_reset_token_created(sender, instance, reset_password_token, *args, 
         # to:
         [reset_password_token.user.email]
     )
+
+
+
+
+# Create your models here.
+class Consult(models.Model):
+    name = models.CharField(max_length=16, null=True)
+    position = models.CharField(max_length=16, null=True)
+    group = models.CharField(max_length=50, null=True)
+    email = models.CharField(max_length=50, null=True)
+    phone = models.CharField(max_length=14, null=True)
+    describe = models.TextField(blank=True, null=True)
+    file = models.FileField(blank=True, null=True)
+    create_date = models.DateTimeField(auto_now_add=True)
+    update_date = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'Consult'
