@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.password_validation import validate_password
 
-from account.models import Consult
+
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -59,9 +59,7 @@ class ChangePasswordSerializer(serializers.Serializer):
         validate_password(value)
         return value
 
-class SendEmailSerializer(serializers.ModelSerializer):
-
-        class Meta:
-            model = Consult
-            fields = ('id', 'name', 'position', 'group', 'email', 'phone', 'describe', 'file', 'create_date')
-
+class SendEmailSerializer(serializers.Serializer):
+    subject = serializers.CharField(required=True)
+    text = serializers.CharField(required=True)
+    recipient_list = serializers.EmailField(required=True)
