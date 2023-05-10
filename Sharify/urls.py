@@ -22,4 +22,5 @@ urlpatterns = [
     path('', include('account.urls')),
     path('api-token-auth/', views.obtain_auth_token),
     path('api/password_reset/', include('django_rest_passwordreset.urls', namespace='password_reset')),
+    path('', include('feed.urls')),
 ]

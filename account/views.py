@@ -1,18 +1,11 @@
 from django.shortcuts import render
 from rest_framework.decorators import api_view
 from django.core.mail import send_mail
-
-from django.core.mail import EmailMessage
-
 from django.conf import settings
-
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
-
-from . import serializers
 from .serializers import UserSerializer, RegisterSerializer, ChangePasswordSerializer, SendEmailSerializer
-from django.contrib.auth.models import User
 from rest_framework.authentication import TokenAuthentication
 from rest_framework import generics, status
 
