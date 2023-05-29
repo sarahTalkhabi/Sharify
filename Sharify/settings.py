@@ -24,7 +24,7 @@ SECRET_KEY = 'django-insecure-46wny9x32%%mmm@d0*tm4+cf*o)1th=b!xx2!&21z4#lj9zq89
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['testserver', '127.0.0.1']
 
 # Application definition
 
@@ -47,6 +47,11 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',
     ],
+    # 'TEST_REQUEST_RENDERER_CLASSES': [
+    #     'rest_framework.renderers.MultiPartRenderer',
+    #     'rest_framework.renderers.JSONRenderer',
+    #     'rest_framework.renderers.TemplateHTMLRenderer'
+    # ]
 }
 
 MIDDLEWARE = [
