@@ -33,3 +33,14 @@ class test_logInUser(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION='token' + self.token.key)
         response = self.client.get('/get-details/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_change_password(self):
+        new_data = {
+            "old_password": "UsertestPass!#",
+            "new_password": "NewUsertestPass!#"
+        }
+        self.client.credentials(HTTP_AUTHORIZATION='token' + self.token.key)
+        print(self.token.key)
+        request = self.client.put('/change-password/', new_data)
+        self.assertEqual(request.status_code, status.HTTP_200_OK)
+
