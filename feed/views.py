@@ -1,5 +1,6 @@
 import datetime
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -19,7 +20,7 @@ class Feed(APIView):
     def get_object(self, pk):
         try:
             return Post.objects.get(pk=pk)
-        except Post.DoesNotExist:
+        except ObjectDoesNotExist:
             return None
 
     def get(self, request):

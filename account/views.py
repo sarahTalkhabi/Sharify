@@ -5,16 +5,21 @@ from django.conf import settings
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .serializers import UserSerializer, RegisterSerializer, ChangePasswordSerializer, SendEmailSerializer
+from django.core.exceptions import ObjectDoesNotExist
+from .models import UserProfile
+from .serializers import UserSerializer, RegisterSerializer, ChangePasswordSerializer, SendEmailSerializer, \
+    profileSerializer
 from rest_framework.authentication import TokenAuthentication
 from rest_framework import generics, status
+from rest_framework.authtoken.models import Token
 
 
 @api_view(['GET'])
 # Class based view to Get User Details using Token Authentication
-def profileAPI(request):
+def Login(request):
     authentication_classes = (TokenAuthentication,)
     permission_classes = (AllowAny,)
+    data = request.data
     user = request.user
     serializer = UserSerializer(user)
     return Response(serializer.data)
@@ -24,6 +29,37 @@ def profileAPI(request):
 class RegisterUserAPIView(generics.CreateAPIView):
     permission_classes = (AllowAny,)
     serializer_class = RegisterSerializer
+
+class Profile(APIView):
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    def get_object(self,id):
+        try:
+            return UserProfile.objects.get(user=id)
+        except ObjectDoesNotExist:
+            return None
+    def get(self,request):
+        self.user = self.get_object(request.user.id)
+        serializer = profileSerializer(self.user)
+        return Response(serializer.data)
+    def post(self,request):
+        serializer = profileSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user=request.user)
+            return Response(status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def put(self,request,pk):
+        profile = self.get_object(pk)
+        if profile is None:
+            return Response({'error' : 'profile not found'},status=status.HTTP_404_NOT_FOUND)
+        serializer = profileSerializer(profile,request.data,partial=True)
+        if serializer.is_valid():
+            if profile.user.id == request.user.id:
+                serializer.save()
+                return Response(serializer.data,status=status.HTTP_200_OK)
+            return Response({'error':'Yoo are not authorized to change the profile'},status=status.HTTP_401_UNAUTHORIZED)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
 
 class ChangePasswordView(APIView):
@@ -76,3 +112,4 @@ class EmailAPI(APIView):
                 return Response(status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+

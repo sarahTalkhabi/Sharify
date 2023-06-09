@@ -1,3 +1,4 @@
+import json
 import os
 from unittest import TestCase
 import django
@@ -21,10 +22,8 @@ class test_logInUser(APITestCase):
         data = {
             "username": 'testRegisteruser',
             "password": 'UsertestPass!#',
-            "password2": "UsertestPass!#",
             "email": 'testRegisteruser@example.com',
-            "first_name": "user",
-            "last_name": "user",
+
         }
         post = self.client.post('/register/', data, format='json')
         self.assertEquals(post.status_code, status.HTTP_201_CREATED)
