@@ -6,9 +6,9 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.core.exceptions import ObjectDoesNotExist
-from .models import UserProfile
+from .models import UserProfile, UserFollowing
 from .serializers import UserSerializer, RegisterSerializer, ChangePasswordSerializer, SendEmailSerializer, \
-    profileSerializer
+    profileSerializer, followerSerializer
 from rest_framework.authentication import TokenAuthentication
 from rest_framework import generics, status
 from rest_framework.authtoken.models import Token
@@ -30,36 +30,53 @@ class RegisterUserAPIView(generics.CreateAPIView):
     permission_classes = (AllowAny,)
     serializer_class = RegisterSerializer
 
+
+def not_duplicate(id):
+    try:
+        if UserProfile.objects.get(user=id) is None:
+            return False
+    except ObjectDoesNotExist:
+        return True
+
+
+def get_profile(id):
+    try:
+        return UserProfile.objects.get(user=id)
+    except ObjectDoesNotExist:
+        return None
+
+
 class Profile(APIView):
     authentication_classes = (TokenAuthentication,)
     permission_classes = (IsAuthenticated,)
 
-    def get_object(self,id):
-        try:
-            return UserProfile.objects.get(user=id)
-        except ObjectDoesNotExist:
-            return None
-    def get(self,request):
-        self.user = self.get_object(request.user.id)
-        serializer = profileSerializer(self.user)
+    def get(self, request):
+        profile = get_profile(request.user.id)
+        serializer = profileSerializer(profile)
         return Response(serializer.data)
-    def post(self,request):
+
+    def post(self, request):
         serializer = profileSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(user=request.user)
+            if not_duplicate(request.user.id):
+                serializer.save(user=request.user)
+            else:
+                return Response(status=status.HTTP_302_FOUND)
             return Response(status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    def put(self,request,pk):
-        profile = self.get_object(pk)
+
+    def put(self, request, pk):
+        profile = get_profile(pk)
         if profile is None:
-            return Response({'error' : 'profile not found'},status=status.HTTP_404_NOT_FOUND)
-        serializer = profileSerializer(profile,request.data,partial=True)
+            return Response({'error': 'profile not found'}, status=status.HTTP_404_NOT_FOUND)
+        serializer = profileSerializer(profile, request.data, partial=True)
         if serializer.is_valid():
             if profile.user.id == request.user.id:
                 serializer.save()
-                return Response(serializer.data,status=status.HTTP_200_OK)
-            return Response({'error':'Yoo are not authorized to change the profile'},status=status.HTTP_401_UNAUTHORIZED)
-        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response({'error': 'Yoo are not authorized to change the profile'},
+                            status=status.HTTP_401_UNAUTHORIZED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ChangePasswordView(APIView):
@@ -81,6 +98,27 @@ class ChangePasswordView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class DoFollow(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        profile = get_profile(request.user.id)
+        serializer = followerSerializer(profile)
+        return Response(serializer.data)
+
+    def post(self, request, pk):
+        UserFollowing.objects.create(user_id=request.user,
+                                     following_user_id=get_profile(pk))
+        profile = get_profile(request.user.id)
+        serializer = followerSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(status=status.HTTP_200_OK)
+
+    def delete(self):
+        pass
+
+
 class EmailAPI(APIView):
     def get(self, request):
         serializer = SendEmailSerializer(data=request.data)
@@ -91,7 +129,8 @@ class EmailAPI(APIView):
             recipient_list = serializer.data.get('recipient_list')
             from_email = settings.DEFAULT_FROM_EMAIL
             if subject is None and txt_ is None and html_ is None and recipient_list is None:
-                return Response({'msg': 'There must be a subject, a recipient list, and either HTML or Text.'}, status=200)
+                return Response({'msg': 'There must be a subject, a recipient list, and either HTML or Text.'},
+                                status=200)
             elif html_ is not None and txt_ is not None:
                 return Response({'msg': 'You can either use HTML or Text.'}, status=200)
             elif html_ is None and txt_ is None:
@@ -112,4 +151,3 @@ class EmailAPI(APIView):
                 return Response(status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-

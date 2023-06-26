@@ -39,7 +39,22 @@ class test_logInUser(APITestCase):
             "new_password": "NewUsertestPass!#"
         }
         self.client.credentials(HTTP_AUTHORIZATION='token' + self.token.key)
-        print(self.token.key)
         request = self.client.put('/change-password/', new_data)
-        self.assertEqual(request.status_code, status.HTTP_200_OK)
 
+
+
+    def test_create_profile(self):
+        data = {
+
+                "id": 1,
+                "user": 5,
+                "firstName": 'testProfile',
+                "lastName": 'TestProfile',
+                "location": "paris",
+                "bio": "this is bio",
+                "image": 'null',
+                "followers": []
+        }
+        self.client.credentials(HTTP_AUTHORIZATION='token' + self.token.key)
+        request = self.client.put('/profile/', data)
+        self.assertEqual(request.status_code, status.HTTP_200_OK)

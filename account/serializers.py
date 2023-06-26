@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.password_validation import validate_password
 
-from account.models import UserProfile
+from account.models import UserProfile, UserFollowing
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -54,10 +54,21 @@ class SendEmailSerializer(serializers.Serializer):
     subject = serializers.CharField(required=True)
     text = serializers.CharField(required=True)
     recipient_list = serializers.EmailField(required=True)
+
+
 class profileSerializer(serializers.ModelSerializer):
     user = serializers.ReadOnlyField(source='user.id')
+
     class Meta:
         model = UserProfile
         fields = '__all__'
 
 
+
+
+class followerSerializer(serializers.ModelSerializer):
+    user_id = serializers.ReadOnlyField(source='user.id')
+
+    class Meta:
+        model = UserFollowing
+        fields = '__all__'
