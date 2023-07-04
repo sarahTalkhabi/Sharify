@@ -102,13 +102,16 @@ class DoFollow(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request):
-        profile = get_profile(request.user.id)
-        serializer = followerSerializer(profile)
+        try:
+            following = UserFollowing.objects.filter(user_id=request.user.id)
+        except ObjectDoesNotExist:
+            return Response({'message': 'profile does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        serializer = followerSerializer(following)
         return Response(serializer.data)
 
     def post(self, request, pk):
         UserFollowing.objects.create(user_id=request.user,
-                                     following_user_id=get_profile(pk))
+                                     following_user_id=get_profile(pk).user)
         profile = get_profile(request.user.id)
         serializer = followerSerializer(data=request.data)
         if serializer.is_valid():
