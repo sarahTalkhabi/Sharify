@@ -11,6 +11,7 @@ class Post(models.Model):
     text = models.TextField(validators=[MaxLengthValidator(200)], null=True)
     image = models.ImageField(upload_to='upload', null=True)
     video = models.FileField(upload_to='media', null=True)
+    like = models.IntegerField(git)
     date = models.DateField(auto_now_add=True)
 
     objects = models.Manager()
