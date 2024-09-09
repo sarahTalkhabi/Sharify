@@ -12,5 +12,6 @@ class Post(models.Model):
     image = models.ImageField(upload_to='upload', null=True)
     video = models.FileField(upload_to='media', null=True)
     date = models.DateField(auto_now_add=True)
+    like = models.IntegerField()
     objects = models.Manager()
 
